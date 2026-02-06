@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Will you be my Valentine?</title>
+
+  <style>
+    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    body { margin: 0; height: 100vh; background: #f4cbd6; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .card { background: white; border-radius: 16px; padding: 40px 50px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.15); max-width: 420px; width: 100%; transition: all 0.6s ease; position: relative; overflow: hidden; }
+    .card.expanded { max-width: 560px; padding: 55px; }
+    .icon { font-size: 48px; margin-bottom: 20px; }
+    h1 { font-size: 22px; font-weight: 600; margin-bottom: 30px; color: #000; min-height: 32px; }
+    .buttons { display: none; align-items: center; justify-content: center; gap: 24px; margin-bottom: 10px; }
+
+    .no, .yes {
+      padding: 14px 40px;
+      font-size: 18px;
+      border-radius: 999px;
+      box-shadow: 0 6px 18px rgba(233,75,106,0.45);
+      transition: transform 0.2s ease;
+    }
+
+    .no {
+      background: white;
+      border: none;
+      color: #333;
+      position: relative;
+      pointer-events: none; /* 🚫 cannot click */
+      z-index: 999;
+    }
+
+    .yes {
+      background: #e94b6a;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    .yes:hover { transform: scale(1.15); }
+
+    .hint { font-size: 13px; color: #555; margin-top: 8px; display: none; }
+    .celebration { display: none; margin-top: 20px; animation: fadeIn 0.6s ease forwards; }
+    .celebration-text { font-size: 22px; font-weight: 600; margin-bottom: 15px; }
+    .final-message { display: none; font-size: 22px; font-weight: 600; margin-top: 30px; white-space: pre-line; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+    .heart { position: fixed; font-size: 22px; pointer-events: none; animation: floatUpSmooth 3s ease forwards; }
+    @keyframes floatUpSmooth { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-260px) scale(1.6); opacity: 0; } }
+  </style>
+</head>
+
+<body>
+
+<div class="card" id="card">
+  <div class="icon">🐱💗</div>
+  <h1 id="question"></h1>
+
+  <div class="buttons" id="buttons">
+    <button class="no" id="noBtn">No</button>
+    <button class="yes" onclick="yesClick()">Yes</button>
+  </div>
+
+  <div class="hint" id="hint">"No" seems a bit shy 🥺</div>
+
+  <div class="celebration" id="celebration">
+    <div class="celebration-text">Good choice you said yes !!! 💕🎉</div>
+    <img src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExN2draTMyMjdvdXJubW1oOHgzb296Mm1hMTI2cGZudWk0d3JkbnlqMCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/WmkqburJqXziM/giphy.gif" width="100%">
+  </div>
+
+  <div class="final-message" id="finalMessage"></div>
+</div>
+
+<script>
+  const questionText = "Will you be my Valentine, Stacy?";
+  const questionEl = document.getElementById("question");
+  const buttons = document.getElementById("buttons");
+  const hint = document.getElementById("hint");
+  const noBtn = document.getElementById("noBtn");
+
+  let mouseTimeout;
+
+  // Typewriter
+  let i = 0;
+  const typer = setInterval(() => {
+    questionEl.textContent += questionText.charAt(i++);
+    if (i === questionText.length) {
+      clearInterval(typer);
+      buttons.style.display = "flex";
+      hint.style.display = "block";
+    }
+  }, 70);
+
+  // FAST full-page dodge
+  document.addEventListener("mousemove", (e) => {
+    const r = noBtn.getBoundingClientRect();
+    const cx = r.left + r.width / 2;
+    const cy = r.top + r.height / 2;
+
+    const dx = cx - e.clientX;
+    const dy = cy - e.clientY;
+    const dist = Math.hypot(dx, dy);
+    const trigger = 180;
+
+    if (dist < trigger) {
+      noBtn.style.position = "fixed";
+
+      const force = (trigger - dist) / trigger;
+      const speed = 5; // 🔥 faster movement
+
+      let x = cx + dx * force * speed;
+      let y = cy + dy * force * speed;
+
+      x = Math.max(10, Math.min(x, window.innerWidth - r.width - 10));
+      y = Math.max(10, Math.min(y, window.innerHeight - r.height - 10));
+
+      noBtn.style.left = x + "px";
+      noBtn.style.top = y + "px";
+    }
+
+    clearTimeout(mouseTimeout);
+    mouseTimeout = setTimeout(() => {
+      noBtn.style.position = "relative";
+      noBtn.style.left = "0";
+      noBtn.style.top = "0";
+    }, 700);
+  });
+
+  function yesClick() {
+    document.getElementById("card").classList.add("expanded");
+    questionEl.style.display = "none";
+    buttons.style.display = "none";
+    hint.style.display = "none";
+
+    const celebration = document.getElementById("celebration");
+    const finalMessage = document.getElementById("finalMessage");
+
+    celebration.style.display = "block";
+    for (let j = 0; j < 30; j++) createHeart();
+
+    setTimeout(() => {
+      celebration.style.display = "none";
+      finalMessage.style.display = "block";
+      typeMessage(
+        "I will be seeing you on the 14th 💌\nLocation to be announced…",
+        finalMessage
+      );
+    }, 12000);
+  }
+
+  function typeMessage(text, el) {
+    let idx = 0;
+    const int = setInterval(() => {
+      el.textContent += text.charAt(idx++);
+      if (idx === text.length) clearInterval(int);
+    }, 60);
+  }
+
+  function createHeart() {
+    const heart = document.createElement("div");
+    heart.className = "heart";
+    heart.textContent = "💖";
+    heart.style.left = Math.random() * window.innerWidth + "px";
+    heart.style.bottom = "0px";
+    document.body.appendChild(heart);
+    setTimeout(() => heart.remove(), 3000);
+  }
+</script>
+
+</body>
+</html>
